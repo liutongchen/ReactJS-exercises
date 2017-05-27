@@ -68,7 +68,7 @@ class LoginControl extends React.Component {
 ReactDOM.render(<LoginControl/>, document.getElementById('root'))
 */
 
-/*-----A boiling water detector-----------------*/
+/*2. -----------A boiling water detector-----------------
 function BoilingVerdict(props) {
     if (props.temperature >= 100) {
         return <p>The water would boil</p>
@@ -123,7 +123,7 @@ class Calculate extends React.Component {
 
     static tryConvert(temp, convert) {
         const input = parseFloat(temp);
-        if (Number.isNaN(input)) { return 0; }
+        if (Number.isNaN(input)) { return ''; }
         const output = convert(input);
         const rounded = Math.round(output * 1000) / 1000;
         return rounded.toString();
@@ -160,3 +160,105 @@ class Calculate extends React.Component {
 }
 
 ReactDOM.render(<Calculate />, document.getElementById('root'))
+*/
+
+/*3. --------------build a webpage based on a JSON and a mock------------------
+for link and mock, please refer to "https://facebook.github.io/react/docs/thinking-in-react.html" */
+import PRODUCT from './PRODUCT.json';
+
+class ProductRow extends React.Component {
+    render() {
+        const name = this.props.product.stocked ? this.props.product.name :
+            <span style={{ color: 'red' }}>{this.props.product.name}</span>
+        return (
+            <tr>
+                <td>{name}</td>
+                <td>{this.props.product.price}</td>
+            </tr>
+        )
+    }
+}
+
+class ProductCategoryRow extends React.Component {
+    render() {
+        return <tr><th colSpan="2">{this.props.product.category}</th></tr>
+    }
+}
+
+class ProductTable extends React.Component {
+    render() {
+        let lastCategory = null;
+        const row = [];
+        this.props.products.forEach((product) => {
+            if (product.name.indexOf(this.props.searchText) === -1 || (this.props.checked && !product.stocked)) {
+                    return;
+            } 
+            if (product.category !== lastCategory) {
+                row.push(<ProductCategoryRow key={product.category} product={product} />);
+            }
+            row.push(<ProductRow product={product} key={product.name} />);
+            lastCategory = product.category;
+        });
+        return (
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>{row}</tbody>
+            </table>
+        )
+    }
+}
+
+class SearchBar extends React.Component {
+    handleSearch(e) {
+            this.props.handleSearch(e.target.value);
+    }
+
+    render() {
+        return (
+            <div>
+                <input type="text" placeholder="search..." value={this.props.searchText} onChange={this.handleSearch.bind(this)} />
+                <p>
+                    <input type="checkbox" onChange={this.props.handleClick} />{' '}Only show products in stock
+                </p>
+            </div>
+        )
+    }
+}
+
+class FilterableProductTable extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            checked: false,
+            value: ""
+        }
+    }
+
+    handleCheckboxClick() {
+        this.setState({
+            checked: !(this.state.checked)
+        })
+    }
+
+    handleSearch(text) {
+        console.log(text);
+        this.setState({
+            value: text
+        })
+    }
+
+    render() {
+        return (
+            <div>
+                <SearchBar handleClick={this.handleCheckboxClick.bind(this)} handleSearch={this.handleSearch.bind(this)} value={this.state.value}/>
+                <ProductTable products={this.props.product} checked={this.state.checked} searchText={this.state.value}/>
+            </div>)
+    }
+}
+
+ReactDOM.render(<FilterableProductTable product={PRODUCT} />, document.getElementById('root'));
